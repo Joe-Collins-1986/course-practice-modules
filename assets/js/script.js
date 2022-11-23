@@ -32,8 +32,41 @@ function displayStatus(data) {
 async function postForm(e) {
     const form = new FormData(document.getElementById("checksform"));
 
-    for (let entry of form.entries()) {
-        console.log(entry)
+    const response = await fetch(API_URL, {
+                        method: "POST",
+                        headers: {
+                                    "Authorization": API_KEY,
+                                 },
+                        body: form,
+                        })
+    const postData = await response.json();
+
+    if(response.ok) {
+        displayErrors(postData)
+    }else{
+        throw new Error(postData.error);
+    }
+}
+
+function displayErrors(data) {
+
+    let errorHeading = `JSHint Results for ${data.file}`;
+
+    if (data.total_errors === 0) {
+        results = `<div class="No-errors">No errors reposrted.</div>`
+    }else{
+        results = `<div>Total Errors: <span class="error_count">${data.total_errors}</span></div>`
+
+        for (let error of data.error_list) {
+            console.log(error)
+            results += `<div>At line <span class="line">${error.line}</span>, `;
+            results += `coloumn <span class="column">${error.col}</span></div>`;
+            results += `<div class="error">${error.error}</div>`;
+        }
+
+        document.getElementById("resultsModalTitle").innerHTML = errorHeading;
+        document.getElementById("results-content").innerHTML = results;
+        resultsModal.show()
     }
 }
 
